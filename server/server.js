@@ -13,7 +13,9 @@ const wss = new WebSocket.Server({ server });
 
 const path = require("path");
 app.use(express.static(path.join(__dirname, "../client")));
-
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "../client/index.html"));
+});
 let world = {
     entropy: 40,
     stability: 60,
