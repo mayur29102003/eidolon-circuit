@@ -1,3 +1,8 @@
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
@@ -15,13 +20,33 @@ let world = {
     deception: 10
 };
 
-// MOCK AI (replace later with real API)
-async function getAIAction(agent) {
+// REAL API 
+async function getAIAction(agentName, world) {
 
-    // Replace this with OpenAI / Ollama later
-    let actions = ["attack", "stabilize", "deceive"];
+    const prompt = `
+You are an intelligent AI agent in a strategic simulation.
 
-    return actions[Math.floor(Math.random()*actions.length)];
+World State:
+Entropy: ${world.entropy}
+Stability: ${world.stability}
+Deception: ${world.deception}
+
+Agent: ${agentName}
+
+Choose ONE action:
+- attack
+- stabilize
+- deceive
+
+Respond ONLY with one word.
+`;
+
+    const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }]
+    });
+
+    return response.choices[0].message.content.trim().toLowerCase();
 }
 
 wss.on("connection", ws => {
@@ -38,7 +63,7 @@ wss.on("connection", ws => {
 
             for (let agent of data.agents) {
 
-                let action = await getAIAction(agent);
+                let action = await getAIAction(agent.name, world);
 
                 if (action === "attack") world.entropy += 5;
                 if (action === "stabilize") world.stability += 5;
