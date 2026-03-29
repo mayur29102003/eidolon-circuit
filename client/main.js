@@ -33,7 +33,8 @@ function animate() {
 animate();
 
 // WebSocket
-const ws = new WebSocket("ws://localhost:3000");
+const protocol = location.protocol === "https:" ? "wss://" : "ws://";
+const ws = new WebSocket(protocol + location.host);
 
 document.getElementById("turnBtn").onclick = () => {
 
