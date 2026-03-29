@@ -49,13 +49,65 @@ document.getElementById("turnBtn").onclick = () => {
 };
 
 ws.onmessage = (msg) => {
+    const data = JSON.parse(msg.data);
 
-    let data = JSON.parse(msg.data);
+    console.log("🧠 AI UPDATE:", data);
 
-    console.log(data);
+    if (data.type === "UPDATE") {
 
-    // Visual reaction
-    nodes.forEach((n, i) => {
-        n.scale.set(1 + Math.random(), 1 + Math.random(), 1 + Math.random());
-    });
+        // Show actions visually
+        data.updates.forEach(update => {
+            console.log(update.name + " → " + update.action);
+        });
+
+        // Optional: display on screen
+        const info = document.getElementById("info");
+        if (info) {
+            info.innerHTML = data.updates.map(u =>
+                `${u.name}: ${u.action}`
+            ).join("<br>");
+        }
+    }
+};
+   ws.onmessage = (msg) => {
+    const data = JSON.parse(msg.data);
+
+    console.log("🧠 AI UPDATE:", data);
+
+    if (data.type === "UPDATE") {
+
+        const info = document.getElementById("info");
+
+        data.updates.forEach((update, i) => {
+
+            console.log(update.name + " → " + update.action);
+
+            // 🎨 COLOR BASED ON ACTION
+            if (update.action === "attack") {
+                nodes[i].material.color.set(0xff0000); // red
+            }
+
+            if (update.action === "stabilize") {
+                nodes[i].material.color.set(0x00ff00); // green
+            }
+
+            if (update.action === "deceive") {
+                nodes[i].material.color.set(0x8000ff); // purple
+            }
+
+            // ⚡ SCALE EFFECT
+            nodes[i].scale.set(
+                1 + Math.random() * 0.5,
+                1 + Math.random() * 0.5,
+                1 + Math.random() * 0.5
+            );
+        });
+
+        // 📊 SHOW TEXT INFO
+        if (info) {
+            info.innerHTML = data.updates.map(u =>
+                `${u.name}: ${u.action}`
+            ).join("<br>");
+        }
+    }
 };
