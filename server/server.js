@@ -65,7 +65,41 @@ wss.on("connection", ws => {
 
             for (let agent of data.agents) {
 
-                let action = await getAIAction(agent.name, world);
+                let action = await async function getAIAction(agentName, world) {
+    try {
+        const prompt = `
+You are an intelligent AI agent in a strategic simulation.
+
+World State:
+Entropy: ${world.entropy}
+Stability: ${world.stability}
+Deception: ${world.deception}
+
+Agent: ${agentName}
+
+Choose ONE action:
+- attack
+- stabilize
+- deceive
+
+Respond ONLY with one word.
+`;
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [{ role: "user", content: prompt }]
+        });
+
+        return response.choices[0].message.content.trim().toLowerCase();
+
+    } catch (error) {
+        console.error("AI ERROR:", error.message);
+
+        // fallback so server doesn't crash
+        const actions = ["attack", "stabilize", "deceive"];
+        return actions[Math.floor(Math.random() * actions.length)];
+    }
+}(agent.name, world);
 
                 if (action === "attack") world.entropy += 5;
                 if (action === "stabilize") world.stability += 5;
